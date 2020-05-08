@@ -7,6 +7,8 @@ import createAxios from './axios';
 const { PORT, LOL_API_KEY } = process.env;
 
 const app = express();
+app.use(express.json());
+
 const axios = createAxios(LOL_API_KEY);
 
 app.use((req, res, next) => {
@@ -23,10 +25,9 @@ app.get('/status', (req, res) => {
 app.post('/lolapi', (req, res) => {
     const { url } = req.body;
     axios.get(url).then(res => {
-        console.log(res);
-        res.status(200).send(res);
+        console.log(res.data);
+        res.status(200).send(res.data);
     }).catch(error => {
-        console.log(error);
         res.status(400).send(error);
     });
 });

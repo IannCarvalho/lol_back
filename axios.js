@@ -6,9 +6,7 @@ const createInstance = (apiKey) => {
 
     const axiosInstance = axios.create({
         baseURL: lolApiUrl,
-        params: {
-            api_key: apiKey
-        }
+        headers: { 'X-Riot-Token': apiKey }
     });
 
     return axiosInstance;
