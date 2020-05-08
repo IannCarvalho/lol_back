@@ -24,9 +24,9 @@ app.get('/status', (req, res) => {
 
 app.post('/lolapi', (req, res) => {
     const { url } = req.body;
-    axios.get(url).then(res => {
-        console.log(res.data);
-        res.status(200).send(res.data);
+    axios.get(url).then(lolResponse => {
+        const { data } = lolResponse;
+        res.status(200).send(data);
     }).catch(error => {
         res.status(400).send(error);
     });
