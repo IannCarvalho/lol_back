@@ -1,8 +1,8 @@
 import express from 'express';
-import summonersRouter from './summoners';
+import summonersRouter from './controllers/summoner';
 
 const router = express.Router();
 
-router.use('/summoners', summonersRouter);
+router.use('/summoner', summonersRouter);
 
 export default router;
