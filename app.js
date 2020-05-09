@@ -1,15 +1,13 @@
 import express from 'express';
 import dotenv from 'dotenv';
+import v1Router from '.';
 dotenv.config();
-
-import createAxios from './axios';
 
 const { PORT, LOL_API_KEY } = process.env;
 
 const app = express();
 app.use(express.json());
-
-const axios = createAxios(LOL_API_KEY);
+app.use('/', v1Router);
 
 app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
@@ -20,16 +18,6 @@ app.use((req, res, next) => {
 
 app.get('/status', (req, res) => {
     res.send('Status: Running');
-});
-
-app.post('/lolapi', (req, res) => {
-    const { url } = req.body;
-    axios.get(url).then(lolResponse => {
-        const { data } = lolResponse;
-        res.status(200).send(data);
-    }).catch(error => {
-        res.status(400).send(error);
-    });
 });
 
 app.listen(PORT || 5000);
