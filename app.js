@@ -1,6 +1,7 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import v1Router from '.';
+
 dotenv.config();
 
 const { PORT, LOL_API_KEY } = process.env;

@@ -27,7 +27,7 @@ router.get('/by_name/:summonerName', (req, res) => {
     });
 });
 
-router.get('/byname/:encryptedPUUID', (req, res) => {
+router.get('/by_puuid/:encryptedPUUID', (req, res) => {
     const { encryptedPUUID } = req.params;
     const path = 'summoner/v4/summoners/by-puuid/'
     axios.get(path + encryptedPUUID).then(lolResponse => {
@@ -40,7 +40,7 @@ router.get('/byname/:encryptedPUUID', (req, res) => {
 
 router.get('/:encryptedSummonerId', (req, res) => {
     const { encryptedSummonerId } = req.params;
-    const path = 'summoner/'
+    const path = 'summoner/v4/summoners/'
     axios.get(path + encryptedSummonerId).then(lolResponse => {
         const { data } = lolResponse;
         res.status(200).send(data);
