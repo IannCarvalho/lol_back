@@ -48,17 +48,7 @@ router.get('/:encryptedSummonerId', (req, res) => {
 router.get('/champion_masteries/:encryptedSummonerId', (req, res) => {
     const { champion } = req.query
     let path = `champion-mastery/v4/champion-masteries/by-summoner/${req.params.encryptedSummonerId}/`
-    champion ? path += `by-champion/${champion}/` : path
-    axios.get(path).then(lolResponse => {
-        const { data } = lolResponse;
-        res.status(200).send(data);
-    }).catch(error => {
-        res.status(400).send(error);
-    });
-});
-
-router.get('/total_maesteries/:encryptedSummonerId', (req, res) => {
-    const path = `champion-mastery/v4/scores/by-summoner/${req.params.encryptedSummonerId}/`
+    path = champion ? `${path}by-champion/${champion}/` : path
     axios.get(path).then(lolResponse => {
         const { data } = lolResponse;
         res.status(200).send(data);
