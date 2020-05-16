@@ -26,7 +26,9 @@ router.get('/match_frame_details/:matchId', (req, res) => {
 });
 
 router.get('/match_lists/:encryptedAccountId', (req, res) => {
-    const path = `match/v4/matchlists/by-account/${req.params.encryptedAccountId}/`
+    const queries = req.query;
+    const queryString = Object.keys(queries).map(key => key + '=' + queries[key]).join('&');
+    const path = `match/v4/matchlists/by-account/${req.params.encryptedAccountId}?${queryString}`;
     axios.get(path).then(lolResponse => {
         const { data } = lolResponse;
         res.status(200).send(data);
