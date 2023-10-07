@@ -2,10 +2,11 @@ import express from 'express';
 import dotenv from 'dotenv';
 import v1Router from '.';
 import cors from 'cors';
+import db from './lib/database';
 
 dotenv.config();
 
-const { PORT, LOL_API_KEY } = process.env;
+const { PORT } = process.env;
 
 const app = express();
 app.use(cors());

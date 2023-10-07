@@ -38,4 +38,4 @@ router.get('/match_lists/:encryptedAccountId', (req, res) => {
     });
 });
 
-module.exports = router;
+export default router;

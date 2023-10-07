@@ -57,4 +57,4 @@ router.get('/champion_masteries/:encryptedSummonerId', (req, res) => {
     });
 });
 
-module.exports = router;
+export default router;
