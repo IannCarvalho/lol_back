@@ -1,5 +1,7 @@
 import axios from 'axios';
-require('dotenv').config();
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const { LOL_API_KEY } = process.env;
 

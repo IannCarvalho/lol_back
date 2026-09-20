@@ -20,6 +20,8 @@
     "nodemon": "^2.0.3"
   },
   "scripts": {
-    "dev": "nodemon --exec babel-node ./app.js"
+    "dev": "nodemon --exec babel-node ./app.js",
+    "build": "babel . --out-dir dist --copy-files --ignore \"node_modules\",\"dist\"",
+    "start": "node dist/app.js"
   }
 }
