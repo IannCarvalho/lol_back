@@ -59,3 +59,17 @@ Health check: `GET /status` → `Status: Running`.
 ## Populando o banco
 
 Os dados de campeões e facções vêm do script `data_retrival/setup_database.py` (no repositório `lol_front`), que busca as informações nas APIs públicas da Riot (Universe) e DDragon e insere nas coleções `champions` e `nationalities`.
+
+## Testes
+
+O projeto usa [Vitest](https://vitest.dev/) + [Supertest](https://github.com/ladjs/supertest). Os testes cobrem os helpers de `util.js` e as rotas de `champion`/`nationality` (com os services mockados, sem tocar o MongoDB).
+
+```bash
+# roda a suíte uma vez
+npm test
+
+# modo watch
+npm run test:watch
+```
+
+Os testes ficam em `tests/`.
