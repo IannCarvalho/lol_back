@@ -1,0 +1,26 @@
+# Render Blueprint para o lol_back (plano gratuito).
+# Docs: https://render.com/docs/blueprint-spec
+#
+# Ao criar um "Blueprint" no Render apontando para este repositório, ele lê
+# este arquivo e provisiona o Web Service automaticamente.
+#
+# MONGO_URL fica com sync:false: o Render pede o valor no primeiro deploy
+# (não commite a connection string no repo).
+
+services:
+  - type: web
+    name: lol-back
+    runtime: node
+    plan: free
+    region: oregon
+    branch: master
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /status
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      - key: PORT
+        value: "10000"
+      - key: MONGO_URL
+        sync: false
