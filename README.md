@@ -47,9 +47,10 @@ Variáveis de ambiente (`.env`):
 npm run dev
 
 # produção
-npm run build
 npm start
 ```
+
+> `start` roda a aplicação com `babel-node` (transpila em tempo de execução). O `.gitignore` inclui `dist/` caso você adicione um step de build compilado no futuro.
 
 Health check: `GET /status` → `Status: Running`.
 
