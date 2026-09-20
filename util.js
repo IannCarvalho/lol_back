@@ -1,3 +1,17 @@
+const formatError = (error) => {
+    if (!error) {
+        return null;
+    }
+    // Mongoose cast errors (e.g. malformed id/value) -> treat as a bad request.
+    if (error.name === 'CastError') {
+        return `Invalid value for field '${error.path}'.`;
+    }
+    if (error.name === 'ValidationError') {
+        return 'Validation failed.';
+    }
+    return error.message || 'Unexpected error.';
+};
+
 const catchFormatValidation = (error) => {
     const formatted = formatError(error);
     if (formatted) {
