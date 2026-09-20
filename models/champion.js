@@ -1,5 +1,5 @@
 import { Schema } from 'mongoose';
-import db from '../lib/database';
+import db from '../lib/database.js';
 
 const championSchema = new Schema({
     version: String,

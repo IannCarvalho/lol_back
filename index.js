@@ -1,6 +1,6 @@
 import express from 'express';
-import championRouter from './controllers/champion';
-import nationalityRouter from './controllers/nationality';
+import championRouter from './controllers/champion.js';
+import nationalityRouter from './controllers/nationality.js';
 
 const router = express.Router();
 

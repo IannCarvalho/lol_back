@@ -1,6 +1,6 @@
 import express from 'express';
-import { getChampion } from '../services/champion';
-import { getErrorCode } from '../util';
+import { getChampion } from '../services/champion.js';
+import { getErrorCode } from '../util.js';
 
 const router = express.Router();
 

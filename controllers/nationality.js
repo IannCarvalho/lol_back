@@ -1,6 +1,6 @@
 import express from 'express';
-import { getNationality, getAllNationalites, getAllChampionsByNationality } from '../services/nationality';
-import { getErrorCode } from '../util';
+import { getNationality, getAllNationalites, getAllChampionsByNationality } from '../services/nationality.js';
+import { getErrorCode } from '../util.js';
 
 const router = express.Router();
 

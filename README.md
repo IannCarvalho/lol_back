@@ -4,9 +4,9 @@ API em Node.js/Express que serve dados de League of Legends (campeões e facçõ
 
 ## Stack
 
-- Node.js + Express 4
-- Mongoose (MongoDB)
-- Babel (`@babel/node`) para suporte a ESM
+- Node.js (ESM nativo, requer Node 18+)
+- Express 5
+- Mongoose 9 (MongoDB)
 
 ## Estrutura
 
@@ -38,14 +38,14 @@ Variáveis de ambiente (`.env`):
 ## Rodando
 
 ```bash
-# desenvolvimento (hot reload)
+# desenvolvimento (hot reload via node --watch)
 npm run dev
 
 # produção
 npm start
 ```
 
-> `start` roda a aplicação com `babel-node` (transpila em tempo de execução). O `.gitignore` inclui `dist/` caso você adicione um step de build compilado no futuro.
+> O projeto usa ESM nativo do Node (`"type": "module"` no `package.json`), sem step de build. O `dotenv` carrega o `.env` automaticamente.
 
 Health check: `GET /status` → `Status: Running`.
 
