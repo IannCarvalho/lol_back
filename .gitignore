@@ -1,3 +1,19 @@
+# Environment
 .env
+
+# Dependencies / build
 node_modules/
 dist/
+
+# Logs
+npm-debug.log*
+yarn-error.log*
+
+# Deploy (Vercel, caso use a CLI aqui)
+.vercel
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
