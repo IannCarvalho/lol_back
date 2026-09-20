@@ -6,19 +6,33 @@ import db from './lib/database.js';
 
 dotenv.config();
 
-const { PORT } = process.env;
+const { PORT, ALLOWED_ORIGINS } = process.env;
+
+// Origens permitidas: por padrão, o frontend em produção (Vercel) e o dev local.
+// Pode ser sobrescrito/estendido via env var ALLOWED_ORIGINS (lista separada
+// por vírgula), útil para adicionar previews sem mexer no código.
+const defaultOrigins = [
+    'https://lolfront.vercel.app',
+    'http://localhost:5500',
+    'http://127.0.0.1:5500',
+];
+const allowedOrigins = ALLOWED_ORIGINS
+    ? ALLOWED_ORIGINS.split(',').map(o => o.trim()).filter(Boolean)
+    : defaultOrigins;
 
 const app = express();
-app.use(cors());
+app.use(cors({
+    origin(origin, callback) {
+        // Sem header Origin (ex.: curl, health check do Render) -> libera.
+        if (!origin || allowedOrigins.includes(origin)) {
+            return callback(null, true);
+        }
+        return callback(new Error(`Origin not allowed by CORS: ${origin}`));
+    },
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+}));
 app.use(express.json());
 app.use('/', v1Router);
-
-app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-    next();
-});
 
 app.get('/status', (req, res) => {
     res.send('Status: Running');
