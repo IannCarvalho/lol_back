@@ -2,6 +2,10 @@
 
 API em Node.js/Express que serve dados de League of Legends (campeões e facções/regiões) a partir de um MongoDB previamente populado pelo script `data_retrival/setup_database.py` do [lol_front](https://github.com/IannCarvalho/lol_front).
 
+**Live:** https://lol-back-6zld.onrender.com (Render, plano free) · health check em [`/status`](https://lol-back-6zld.onrender.com/status).
+
+> ⚠️ No plano free do Render o serviço "dorme" após ~15 min sem tráfego; a primeira requisição depois disso leva ~30-50s (cold start).
+
 ## Stack
 
 - Node.js (ESM nativo, requer Node 18+)
@@ -48,6 +52,21 @@ npm start
 > O projeto usa ESM nativo do Node (`"type": "module"` no `package.json`), sem step de build. O `dotenv` carrega o `.env` automaticamente.
 
 Health check: `GET /status` → `Status: Running`.
+
+## Deploy (Render)
+
+O repositório inclui um `render.yaml` (Blueprint) que provisiona o serviço no
+[Render](https://render.com): runtime Node, plano free, health check em
+`/status`. Ao criar um **Blueprint** apontando para este repo, o Render pede o
+valor de `MONGO_URL` (a connection string do Atlas — não vai versionada).
+
+Pontos de atenção no MongoDB Atlas:
+- **Network Access**: libere `0.0.0.0/0` (o Render free não tem IP fixo), senão
+  a conexão falha com erro de TLS/seleção de servidor.
+- O nome do banco (`lol`) é forçado via `dbName` em `lib/database.js`, então a
+  `MONGO_URL` funciona com ou sem o `/lol` no path.
+
+> Guia completo de deploy (Atlas + Render + Vercel) na raiz do monorepo: [`DEPLOY.md`](../DEPLOY.md).
 
 ## Endpoints
 
