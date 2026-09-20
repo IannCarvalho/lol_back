@@ -13,6 +13,7 @@ services:
     runtime: node
     plan: free
     region: oregon
+    repo: https://github.com/IannCarvalho/lol_back
     branch: master
     buildCommand: npm install
     startCommand: npm start
