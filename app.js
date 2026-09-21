@@ -2,7 +2,9 @@ import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import v1Router from './index.js';
-import db from './lib/database.js';
+import { errorHandler } from './middleware.js';
+// Importado apenas pelo efeito colateral de abrir a conexão com o Mongo.
+import './lib/database.js';
 
 dotenv.config();
 
@@ -37,6 +39,10 @@ app.use('/', v1Router);
 app.get('/status', (req, res) => {
     res.send('Status: Running');
 });
+
+// Middleware de erro central: deve ser o último a ser registrado. Recebe
+// qualquer erro encaminhado via next(error) pelos handlers (asyncHandler).
+app.use(errorHandler);
 
 app.listen(PORT || 5000);
 

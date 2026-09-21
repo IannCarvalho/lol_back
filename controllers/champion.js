@@ -1,18 +1,13 @@
 import express from 'express';
 import { getChampion } from '../services/champion.js';
-import { getErrorCode } from '../util.js';
+import { asyncHandler } from '../middleware.js';
 
 const router = express.Router();
 
-router.get('/:name', (req, res) => {
-    const { name } = req.params;
-    getChampion(name).then((champion) => {
-        res.status(200).send(champion);
-    }).catch((error) => {
-        const { message } = error;
-        const code = getErrorCode(message);
-        res.status(code).send({ message });
-    });
-});
+router.get('/:slug', asyncHandler(async (req, res) => {
+    const { slug } = req.params;
+    const champion = await getChampion(slug);
+    res.status(200).send(champion);
+}));
 
 export default router;

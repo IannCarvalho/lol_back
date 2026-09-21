@@ -9,11 +9,14 @@ vi.mock('../services/champion.js', () => ({
 
 import { getChampion } from '../services/champion.js';
 import championRouter from '../controllers/champion.js';
+import { errorHandler } from '../middleware.js';
+import { NotFoundError, BadRequestError } from '../util.js';
 
 const buildApp = () => {
     const app = express();
     app.use(express.json());
     app.use('/champion', championRouter);
+    app.use(errorHandler);
     return app;
 };
 
@@ -34,7 +37,7 @@ describe('GET /champion/:name', () => {
     });
 
     it('returns 404 when the service throws a "not found" error', async () => {
-        getChampion.mockRejectedValue(new Error('Champion not found.'));
+        getChampion.mockRejectedValue(new NotFoundError('Champion not found.'));
 
         const res = await request(buildApp()).get('/champion/unknown');
 
@@ -42,12 +45,21 @@ describe('GET /champion/:name', () => {
         expect(res.body).toEqual({ message: 'Champion not found.' });
     });
 
-    it('returns 400 for a generic service error', async () => {
-        getChampion.mockRejectedValue(new Error("Invalid value for field 'slug'."));
+    it('returns 400 for a bad-request service error', async () => {
+        getChampion.mockRejectedValue(new BadRequestError("Invalid value for field 'slug'."));
 
         const res = await request(buildApp()).get('/champion/bad');
 
         expect(res.status).toBe(400);
         expect(res.body).toEqual({ message: "Invalid value for field 'slug'." });
+    });
+
+    it('returns 500 for an unexpected (untyped) error', async () => {
+        getChampion.mockRejectedValue(new Error('boom'));
+
+        const res = await request(buildApp()).get('/champion/kaboom');
+
+        expect(res.status).toBe(500);
+        expect(res.body).toEqual({ message: 'boom' });
     });
 });

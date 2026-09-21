@@ -1,39 +1,30 @@
 import express from 'express';
-import { getNationality, getAllNationalites, getAllChampionsByNationality } from '../services/nationality.js';
-import { getErrorCode } from '../util.js';
+import {
+    getNationality,
+    getAllNationalities,
+    getAllChampionsByNationality,
+} from '../services/nationality.js';
+import { asyncHandler } from '../middleware.js';
 
 const router = express.Router();
 
-router.get('/:name', (req, res) => {
-    const { name } = req.params;
-    getNationality(name).then((champion) => {
-        res.status(200).send(champion);
-    }).catch((error) => {
-        const { message } = error;
-        const code = getErrorCode(message);
-        res.status(code).send({ message });
-    });
-});
-
-router.get('/', (req, res) => {
-    getAllNationalites().then((nationalities) => {
-        res.status(200).send(nationalities);
-    }).catch((error) => {
-        const { message } = error;
-        const code = getErrorCode(message);
-        res.status(code).send({ message });
-    });
-});
-
-router.get('/champions/:nationality', (req, res) => {
+// Campeões de uma nacionalidade. Declarada antes de '/:name' para que o
+// segmento 'champions' não seja capturado como um nome.
+router.get('/champions/:nationality', asyncHandler(async (req, res) => {
     const { nationality } = req.params;
-    getAllChampionsByNationality(nationality).then((champions) => {
-        res.status(200).send(champions);
-    }).catch((error) => {
-        const { message } = error;
-        const code = getErrorCode(message);
-        res.status(code).send({ message });
-    });
-});
+    const champions = await getAllChampionsByNationality(nationality);
+    res.status(200).send(champions);
+}));
+
+router.get('/', asyncHandler(async (req, res) => {
+    const nationalities = await getAllNationalities();
+    res.status(200).send(nationalities);
+}));
+
+router.get('/:name', asyncHandler(async (req, res) => {
+    const { name } = req.params;
+    const nationality = await getNationality(name);
+    res.status(200).send(nationality);
+}));
 
 export default router;

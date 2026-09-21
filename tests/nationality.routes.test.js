@@ -5,21 +5,24 @@ import request from 'supertest';
 // Mock the service so the router never touches the models / Mongo connection.
 vi.mock('../services/nationality.js', () => ({
     getNationality: vi.fn(),
-    getAllNationalites: vi.fn(),
+    getAllNationalities: vi.fn(),
     getAllChampionsByNationality: vi.fn(),
 }));
 
 import {
     getNationality,
-    getAllNationalites,
+    getAllNationalities,
     getAllChampionsByNationality,
 } from '../services/nationality.js';
 import nationalityRouter from '../controllers/nationality.js';
+import { errorHandler } from '../middleware.js';
+import { NotFoundError } from '../util.js';
 
 const buildApp = () => {
     const app = express();
     app.use(express.json());
     app.use('/nationality', nationalityRouter);
+    app.use(errorHandler);
     return app;
 };
 
@@ -40,7 +43,7 @@ describe('GET /nationality/:name', () => {
     });
 
     it('returns 404 when the nationality is not found', async () => {
-        getNationality.mockRejectedValue(new Error('Nationality not found.'));
+        getNationality.mockRejectedValue(new NotFoundError('Nationality not found.'));
 
         const res = await request(buildApp()).get('/nationality/unknown');
 
@@ -56,17 +59,17 @@ describe('GET /nationality', () => {
 
     it('returns 200 with the list of nationalities', async () => {
         const list = [{ name: 'Ionia' }, { name: 'Noxus' }];
-        getAllNationalites.mockResolvedValue(list);
+        getAllNationalities.mockResolvedValue(list);
 
         const res = await request(buildApp()).get('/nationality');
 
         expect(res.status).toBe(200);
         expect(res.body).toEqual(list);
-        expect(getAllNationalites).toHaveBeenCalledOnce();
+        expect(getAllNationalities).toHaveBeenCalledOnce();
     });
 
     it('returns 404 when no nationalities are found', async () => {
-        getAllNationalites.mockRejectedValue(new Error('Nationality not found.'));
+        getAllNationalities.mockRejectedValue(new NotFoundError('Nationality not found.'));
 
         const res = await request(buildApp()).get('/nationality');
 
@@ -92,7 +95,7 @@ describe('GET /nationality/champions/:nationality', () => {
     });
 
     it('returns 404 when no champions are found for the nationality', async () => {
-        getAllChampionsByNationality.mockRejectedValue(new Error('Champion not found.'));
+        getAllChampionsByNationality.mockRejectedValue(new NotFoundError('Champion not found.'));
 
         const res = await request(buildApp()).get('/nationality/champions/unknown');
 
