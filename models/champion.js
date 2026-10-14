@@ -15,6 +15,20 @@ const championSchema = new Schema({
     background: String,
 });
 
+// Índices para os campos consultados pela API.
+// - `slug`: usado em GET /champion/:slug via findOne({ slug }) — match EXATO,
+//   então o índice é efetivamente aproveitado. NÃO é `unique`: a semeadura dos
+//   dados é externa (data_retrival/*) e nada neste código garante unicidade;
+//   um índice único poderia quebrar o seed caso surjam duplicatas. Fica como
+//   índice simples (não-único) por segurança.
+// - `nationality`: usado em GET /nationality/champions/:nationality. A query
+//   atual é um $regex case-insensitive, que NÃO consegue usar o índice de forma
+//   plena (sem âncora ^ e com /i o Mongo tende a varrer); o índice é mantido
+//   mesmo assim por ser barato e por beneficiar eventuais consultas por
+//   igualdade, documentando o trade-off.
+championSchema.index({ slug: 1 });
+championSchema.index({ nationality: 1 });
+
 const Champion = db.model('Champion', championSchema);
 
 export default Champion;
