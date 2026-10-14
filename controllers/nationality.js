@@ -4,9 +4,12 @@ import {
     getAllNationalities,
     getAllChampionsByNationality,
 } from '../services/nationality.js';
-import { asyncHandler } from '../middleware.js';
+import { asyncHandler, cacheControl } from '../middleware.js';
 
 const router = express.Router();
+
+// Dados estáticos entre re-seeds: cacheáveis por 10 min no browser/CDN.
+router.use(cacheControl(600));
 
 // Campeões de uma nacionalidade. Declarada antes de '/:name' para que o
 // segmento 'champions' não seja capturado como um nome.

@@ -8,6 +8,16 @@ import { getErrorCode } from './util.js';
 export const asyncHandler = (handler) => (req, res, next) =>
     Promise.resolve(handler(req, res, next)).catch(next);
 
+// Fábrica de middleware de cache HTTP. Os dados (campeões/nacionalidades) são
+// estáticos entre re-seeds do banco, então um Cache-Control conservador deixa
+// o browser/CDN reaproveitar as respostas sem bater no backend a cada request.
+// Aplicado só nas rotas GET de dados — NUNCA no /status (health check), que
+// precisa refletir o estado atual do serviço. maxAge em segundos.
+export const cacheControl = (maxAge = 600) => (req, res, next) => {
+    res.set('Cache-Control', `public, max-age=${maxAge}`);
+    next();
+};
+
 // Tratador de erro central. Deriva o status do próprio erro (AppError traz
 // statusCode; inesperados viram 500) e responde sempre com { message }.
 // eslint-disable-next-line no-unused-vars
