@@ -9,10 +9,10 @@ const nationalitySchema = new Schema({
 });
 
 // Índice no campo consultado pela API (GET /nationality/:name via
-// findOne({ name: $regex })). Como a busca é $regex case-insensitive, o índice
-// não é usado de forma plena; é mantido por ser barato e por beneficiar
-// consultas por igualdade. Trade-off documentado no PR.
-nationalitySchema.index({ name: 1 });
+// findOne({ name }) com collation case-insensitive). A collation do índice
+// precisa casar com a da query para ser aproveitado; por isso o índice é
+// declarado com a mesma collation (locale 'en', strength 2) usada no service.
+nationalitySchema.index({ name: 1 }, { collation: { locale: 'en', strength: 2 } });
 
 const Nationality = db.model('Nationality', nationalitySchema);
 
