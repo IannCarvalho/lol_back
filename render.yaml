@@ -20,7 +20,9 @@ services:
     healthCheckPath: /status
     envVars:
       - key: NODE_VERSION
-        value: "20"
+        # Node 24 (LTS atual). O 20 saiu de suporte (EOL em 30/04/2026) e o
+        # mongoose 9 exige >=20.19.0.
+        value: "24"
       - key: PORT
         value: "10000"
       - key: MONGO_URL
