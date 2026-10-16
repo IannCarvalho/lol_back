@@ -54,12 +54,16 @@ describe('GET /champion/:name', () => {
         expect(res.body).toEqual({ message: "Invalid value for field 'slug'." });
     });
 
-    it('returns 500 for an unexpected (untyped) error', async () => {
+    it('returns 500 with a generic message for an unexpected (untyped) error', async () => {
+        const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
         getChampion.mockRejectedValue(new Error('boom'));
 
         const res = await request(buildApp()).get('/champion/kaboom');
 
         expect(res.status).toBe(500);
-        expect(res.body).toEqual({ message: 'boom' });
+        // Nao vaza a mensagem interna: responde generico e loga no servidor.
+        expect(res.body).toEqual({ message: 'Internal server error.' });
+        expect(errorSpy).toHaveBeenCalled();
+        errorSpy.mockRestore();
     });
 });

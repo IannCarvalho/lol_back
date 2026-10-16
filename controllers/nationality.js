@@ -4,30 +4,33 @@ import {
     getAllNationalities,
     getAllChampionsByNationality,
 } from '../services/nationality.js';
-import { asyncHandler, cacheControl } from '../middleware.js';
+import { cacheControl } from '../middleware.js';
 
 const router = express.Router();
 
-// Dados estáticos entre re-seeds: cacheáveis por 10 min no browser/CDN.
+// Dados estaticos entre re-seeds: cacheaveis por 10 min no browser/CDN.
 router.use(cacheControl(600));
 
-// Campeões de uma nacionalidade. Declarada antes de '/:name' para que o
-// segmento 'champions' não seja capturado como um nome.
-router.get('/champions/:nationality', asyncHandler(async (req, res) => {
+// Handlers async diretos: no Express 5 a rejeicao e encaminhada ao error
+// handler automaticamente (sem asyncHandler).
+
+// Campeoes de uma nacionalidade. Declarada antes de '/:name' para que o
+// segmento 'champions' nao seja capturado como um nome.
+router.get('/champions/:nationality', async (req, res) => {
     const { nationality } = req.params;
     const champions = await getAllChampionsByNationality(nationality);
     res.status(200).send(champions);
-}));
+});
 
-router.get('/', asyncHandler(async (req, res) => {
+router.get('/', async (req, res) => {
     const nationalities = await getAllNationalities();
     res.status(200).send(nationalities);
-}));
+});
 
-router.get('/:name', asyncHandler(async (req, res) => {
+router.get('/:name', async (req, res) => {
     const { name } = req.params;
     const nationality = await getNationality(name);
     res.status(200).send(nationality);
-}));
+});
 
 export default router;

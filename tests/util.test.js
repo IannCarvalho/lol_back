@@ -1,69 +1,94 @@
 import { describe, it, expect } from 'vitest';
-import { getErrorCode, checkNotFound, catchFormatValidation } from '../util.js';
+import {
+    getErrorCode,
+    checkNotFound,
+    mapMongooseError,
+    AppError,
+    NotFoundError,
+    BadRequestError,
+} from '../util.js';
 
 describe('getErrorCode', () => {
-    it('returns 404 when the message includes "not found"', () => {
-        expect(getErrorCode('Champion not found.')).toBe(404);
+    it('returns the statusCode of a typed AppError', () => {
+        expect(getErrorCode(new AppError('nope', 403))).toBe(403);
+        expect(getErrorCode(new NotFoundError('x not found.'))).toBe(404);
+        expect(getErrorCode(new BadRequestError('bad'))).toBe(400);
     });
 
-    it('returns 403 when the message includes "not allowed"', () => {
-        expect(getErrorCode('Action not allowed.')).toBe(403);
+    it('returns 500 for an untyped error', () => {
+        expect(getErrorCode(new Error('boom'))).toBe(500);
     });
 
-    it('returns 400 as the default for any other message', () => {
-        expect(getErrorCode('Something went wrong.')).toBe(400);
-        expect(getErrorCode('')).toBe(400);
-    });
-
-    it('prioritizes 404 over 403 when both keywords are present', () => {
-        // "not found" is checked first in the util implementation.
-        expect(getErrorCode('not found and not allowed')).toBe(404);
+    it('returns 500 for a null/undefined error', () => {
+        expect(getErrorCode(null)).toBe(500);
+        expect(getErrorCode(undefined)).toBe(500);
     });
 });
 
 describe('checkNotFound', () => {
-    it('throws with a "<name> not found." message when the object is null', () => {
+    it('throws a "<name> not found." error when the object is null', () => {
         expect(() => checkNotFound(null, 'Champion')).toThrow('Champion not found.');
+    });
+
+    it('throws a NotFoundError (statusCode 404) for null', () => {
+        try {
+            checkNotFound(null, 'Nationality');
+        } catch (error) {
+            expect(error).toBeInstanceOf(NotFoundError);
+            expect(error.statusCode).toBe(404);
+        }
     });
 
     it('does not throw when an object exists', () => {
         expect(() => checkNotFound({ name: 'Ahri' }, 'Champion')).not.toThrow();
     });
 
-    it('does not throw for empty array or other non-null values', () => {
+    it('does not throw for empty array or undefined', () => {
         expect(() => checkNotFound([], 'Champion')).not.toThrow();
         expect(() => checkNotFound(undefined, 'Champion')).not.toThrow();
     });
 });
 
-// formatError is not exported, so it is exercised through catchFormatValidation,
-// which throws an Error whose message equals the formatted output.
-describe('formatError (via catchFormatValidation)', () => {
-    it('formats a Mongoose CastError as an invalid-field message', () => {
+describe('mapMongooseError', () => {
+    it('maps a Mongoose CastError to BadRequestError (400) naming the field', () => {
         const castError = { name: 'CastError', path: 'slug', message: 'raw cast error' };
-        expect(() => catchFormatValidation(castError)).toThrow("Invalid value for field 'slug'.");
+        try {
+            mapMongooseError(castError);
+            throw new Error('should have thrown');
+        } catch (error) {
+            expect(error).toBeInstanceOf(BadRequestError);
+            expect(error.statusCode).toBe(400);
+            expect(error.message).toBe("Invalid value for field 'slug'.");
+        }
     });
 
-    it('formats a ValidationError as "Validation failed."', () => {
+    it('maps a Mongoose ValidationError to BadRequestError (400)', () => {
         const validationError = { name: 'ValidationError', message: 'raw validation error' };
-        expect(() => catchFormatValidation(validationError)).toThrow('Validation failed.');
+        try {
+            mapMongooseError(validationError);
+            throw new Error('should have thrown');
+        } catch (error) {
+            expect(error).toBeInstanceOf(BadRequestError);
+            expect(error.message).toBe('Validation failed.');
+        }
     });
 
-    it('uses the error message for a generic error', () => {
-        const genericError = { name: 'Error', message: 'boom' };
-        expect(() => catchFormatValidation(genericError)).toThrow('boom');
+    it('re-throws an infrastructure error (network/timeout) INTACT', () => {
+        const netError = new Error('connection timed out');
+        netError.name = 'MongooseServerSelectionError';
+        try {
+            mapMongooseError(netError);
+            throw new Error('should have thrown');
+        } catch (error) {
+            // Mesma instancia, nao convertida em 400: vira 5xx no handler.
+            expect(error).toBe(netError);
+            expect(error).not.toBeInstanceOf(BadRequestError);
+            expect(error.statusCode).toBeUndefined();
+        }
     });
 
-    it('falls back to "Unexpected error." when a generic error has no message', () => {
-        const noMessage = { name: 'Error' };
-        expect(() => catchFormatValidation(noMessage)).toThrow('Unexpected error.');
-    });
-
-    it('does not throw when the error is null', () => {
-        expect(() => catchFormatValidation(null)).not.toThrow();
-    });
-
-    it('does not throw when the error is undefined', () => {
-        expect(() => catchFormatValidation(undefined)).not.toThrow();
+    it('does nothing when the error is null or undefined', () => {
+        expect(() => mapMongooseError(null)).not.toThrow();
+        expect(() => mapMongooseError(undefined)).not.toThrow();
     });
 });
