@@ -1,49 +1,41 @@
-import express from 'express';
+// Entrypoint do servico (npm start / node app.js). Carrega o ambiente, abre a
+// conexao com o Mongo, monta o app via createApp e sobe o listen. A montagem
+// do app vive em lib/createApp.js (pura, testavel); aqui ficam os efeitos
+// colaterais (env, banco, porta, sinais de desligamento).
+
 import dotenv from 'dotenv';
-import cors from 'cors';
-import v1Router from './index.js';
-import { errorHandler } from './middleware.js';
-// Importado apenas pelo efeito colateral de abrir a conexão com o Mongo.
-import './lib/database.js';
+import db from './lib/database.js';
+import { createApp, defaultOrigins } from './lib/createApp.js';
 
 dotenv.config();
 
 const { PORT, ALLOWED_ORIGINS } = process.env;
 
-// Origens permitidas: por padrão, o frontend em produção (Vercel) e o dev local.
-// Pode ser sobrescrito/estendido via env var ALLOWED_ORIGINS (lista separada
-// por vírgula), útil para adicionar previews sem mexer no código.
-const defaultOrigins = [
-    'https://lolfront.vercel.app',
-    'http://localhost:5500',
-    'http://127.0.0.1:5500',
-];
+// ALLOWED_ORIGINS (lista separada por virgula) sobrescreve o default; util
+// para adicionar previews sem mexer no codigo.
 const allowedOrigins = ALLOWED_ORIGINS
     ? ALLOWED_ORIGINS.split(',').map(o => o.trim()).filter(Boolean)
     : defaultOrigins;
 
-const app = express();
-app.use(cors({
-    origin(origin, callback) {
-        // Sem header Origin (ex.: curl, health check do Render) -> libera.
-        if (!origin || allowedOrigins.includes(origin)) {
-            return callback(null, true);
-        }
-        return callback(new Error(`Origin not allowed by CORS: ${origin}`));
-    },
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-}));
-app.use(express.json());
-app.use('/', v1Router);
+const port = Number(PORT) || 5000;
 
-app.get('/status', (req, res) => {
-    res.send('Status: Running');
+const app = createApp({ allowedOrigins });
+
+const server = app.listen(port, () => {
+    console.log(`App running on port ${port}`);
 });
 
-// Middleware de erro central: deve ser o último a ser registrado. Recebe
-// qualquer erro encaminhado via next(error) pelos handlers (asyncHandler).
-app.use(errorHandler);
+// Desligamento gracioso: o Render manda SIGTERM em deploy/sleep. Fecha o
+// server (para de aceitar novas conexoes) e a conexao do Mongo antes de sair,
+// evitando conexoes meio-abertas.
+const shutdown = (signal) => {
+    console.log(`${signal} received. Shutting down gracefully...`);
+    server.close(() => {
+        db.close(false).finally(() => process.exit(0));
+    });
+};
 
-app.listen(PORT || 5000);
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+process.on('SIGINT', () => shutdown('SIGINT'));
 
-console.log(`App running on port ${PORT}`);
+export default app;
