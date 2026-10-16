@@ -21,7 +21,6 @@ export const cacheControl = (maxAge = 600) => (req, res, next) => {
 // statusCode; inesperados viram 500) e responde sempre com { message }.
 // Para 5xx: loga o erro completo no servidor e responde uma mensagem generica
 // (nao vaza stack/mensagem interna). Para 4xx: devolve a message do erro.
-// eslint-disable-next-line no-unused-vars
 export const errorHandler = (error, req, res, next) => {
     // Guard padrao do Express: se a resposta ja comecou, delega ao handler
     // default (que fecha a conexao) em vez de tentar reescrever os headers.
